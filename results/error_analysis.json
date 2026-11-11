@@ -1,0 +1,165 @@
+{
+  "n_test": 19710,
+  "random_forest": {
+    "accuracy": 0.9940639269406393,
+    "confusion": {
+      "tn": 12008,
+      "fp": 108,
+      "fn": 9,
+      "tp": 7585
+    },
+    "error_profile": {
+      "n_fn": 108,
+      "n_fp": 9,
+      "fn_https_share": 1.0,
+      "fp_https_share": 1.0,
+      "fn_median_path": 0.0,
+      "fp_median_path": 50.0,
+      "fn_median_url_len": 39.0,
+      "fp_median_url_len": 76.0,
+      "fn_has_ip_share": 0.0,
+      "fp_has_ip_share": 0.0,
+      "fp_top_domains": [
+        [
+          "yahoo.com",
+          2
+        ],
+        [
+          "apple.com",
+          2
+        ],
+        [
+          "stackoverflow.com",
+          1
+        ],
+        [
+          "cloudflare.com",
+          1
+        ],
+        [
+          "state.ma.us",
+          1
+        ],
+        [
+          "facebook.com",
+          1
+        ],
+        [
+          "parliament.uk",
+          1
+        ]
+      ],
+      "fn_top_domains": [
+        [
+          "gitbook.io",
+          46
+        ],
+        [
+          "godaddysites.com",
+          45
+        ],
+        [
+          "weebly.com",
+          4
+        ],
+        [
+          "scearmcoommunnlty.com",
+          3
+        ],
+        [
+          "vercel.app",
+          3
+        ],
+        [
+          "than4.my.id",
+          1
+        ],
+        [
+          "peritag.com",
+          1
+        ],
+        [
+          "tiktok-super.vip",
+          1
+        ]
+      ]
+    }
+  },
+  "xgboost": {
+    "accuracy": 0.9945712836123795,
+    "confusion": {
+      "tn": 12015,
+      "fp": 101,
+      "fn": 6,
+      "tp": 7588
+    },
+    "error_profile": {
+      "n_fn": 101,
+      "n_fp": 6,
+      "fn_https_share": 1.0,
+      "fp_https_share": 1.0,
+      "fn_median_path": 0.0,
+      "fp_median_path": 47.5,
+      "fn_median_url_len": 38.0,
+      "fp_median_url_len": 72.0,
+      "fn_has_ip_share": 0.0,
+      "fp_has_ip_share": 0.0,
+      "fp_top_domains": [
+        [
+          "yahoo.com",
+          2
+        ],
+        [
+          "stackoverflow.com",
+          1
+        ],
+        [
+          "state.ma.us",
+          1
+        ],
+        [
+          "facebook.com",
+          1
+        ],
+        [
+          "parliament.uk",
+          1
+        ]
+      ],
+      "fn_top_domains": [
+        [
+          "gitbook.io",
+          46
+        ],
+        [
+          "godaddysites.com",
+          36
+        ],
+        [
+          "weebly.com",
+          4
+        ],
+        [
+          "bitbucket.org",
+          4
+        ],
+        [
+          "scearmcoommunnlty.com",
+          3
+        ],
+        [
+          "vercel.app",
+          3
+        ],
+        [
+          "than4.my.id",
+          1
+        ],
+        [
+          "peritag.com",
+          1
+        ]
+      ]
+    }
+  }
+}

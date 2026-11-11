@@ -1,0 +1,6 @@
+Model,True_Negative,False_Positive,False_Negative,True_Positive
+logistic_regression,11941,175,87,7507
+decision_tree,11740,376,26,7568
+random_forest,11875,241,48,7546
+svm,11917,199,101,7493
+xgboost,11719,397,51,7543

@@ -1,0 +1,51 @@
+{
+  "environment": {
+    "python": "3.14.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 126 Stepping 5, GenuineIntel",
+    "n_urls": 300
+  },
+  "feature_extraction_ms": {
+    "median": 0.0303,
+    "mean": 0.176,
+    "p95": 0.0393,
+    "max": 43.3916
+  },
+  "models": {
+    "logistic_regression": {
+      "median_ms": 0.25,
+      "mean_ms": 0.2615,
+      "p95_ms": 0.4027,
+      "throughput_per_sec": 3999.2
+    },
+    "decision_tree": {
+      "median_ms": 0.205,
+      "mean_ms": 0.2165,
+      "p95_ms": 0.3363,
+      "throughput_per_sec": 4878.0
+    },
+    "random_forest": {
+      "median_ms": 57.5252,
+      "mean_ms": 70.8011,
+      "p95_ms": 147.7515,
+      "throughput_per_sec": 17.4
+    },
+    "svm": {
+      "median_ms": 0.3775,
+      "mean_ms": 0.4242,
+      "p95_ms": 0.7897,
+      "throughput_per_sec": 2648.7
+    },
+    "xgboost": {
+      "median_ms": 0.9049,
+      "mean_ms": 0.9707,
+      "p95_ms": 1.3229,
+      "throughput_per_sec": 1105.1
+    }
+  },
+  "shap_ms": {
+    "median": 11.0144,
+    "mean": 11.8579,
+    "p95": 16.4504
+  }
+}

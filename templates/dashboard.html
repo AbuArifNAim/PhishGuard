@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · PhishGuard AI{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Security overview of your scans{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="page-title">Security Dashboard</div>
+        <p class="page-sub">
+            Live overview of the phishing-detection pipeline: every scan is validated, resolved,
+            classified by the Random Forest model and explained with SHAP.
+        </p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-ghost" href="/analytics">
+            <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+            View Analytics
+        </a>
+        <a class="btn btn-primary" href="/scanner">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+            New Scan
+        </a>
+    </div>
+</div>
+
+<!-- ================= KPI cards ================= -->
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon cyan">
+                <svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+            </div>
+            <div class="kpi-label">Total Scans</div>
+        </div>
+        <div class="kpi-value" id="kpiTotal">0</div>
+        <div class="kpi-foot"><span class="delta flat" id="kpiTotalDelta">0</span> scans in the last 7 days</div>
+    </div>
+
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon red">
+                <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            </div>
+            <div class="kpi-label">Phishing Detected</div>
+        </div>
+        <div class="kpi-value" id="kpiPhishing">0</div>
+        <div class="kpi-foot"><span class="delta down" id="kpiPhishingPct">0%</span> of all scans</div>
+    </div>
+
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon green">
+                <svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div class="kpi-label">Legitimate</div>
+        </div>
+        <div class="kpi-value" id="kpiLegitimate">0</div>
+        <div class="kpi-foot"><span class="delta up" id="kpiLegitPct">0%</span> verified as safe</div>
+    </div>
+
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon violet">
+                <svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 0-4 4c-2 1-3 2.6-3 4.5 0 1.6.8 3 2 3.9V18a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-2.6c1.2-.9 2-2.3 2-3.9 0-1.9-1-3.5-3-4.5a4 4 0 0 0-4-4z"/></svg>
+            </div>
+            <div class="kpi-label">Avg. Model Confidence</div>
+        </div>
+        <div class="kpi-value" id="kpiConfidence">—</div>
+        <div class="kpi-foot">Random Forest · 16 URL features</div>
+    </div>
+</div>
+
+<!-- ================= Activity + distribution ================= -->
+<div class="grid-main">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Scan Activity</div>
+                <div class="card-sub">Verdicts produced over the last 7 days</div>
+            </div>
+            <div class="legend">
+                <span><i style="background:#3b82f6"></i>Legitimate</span>
+                <span><i style="background:#ef4444"></i>Phishing</span>
+                <span><i style="background:#64748b"></i>Other</span>
+            </div>
+        </div>
+        <div class="chart-wrap"><canvas id="activityChart"></canvas></div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Verdict Distribution</div>
+                <div class="card-sub">Share of each final assessment</div>
+            </div>
+        </div>
+        <div class="chart-wrap" style="height:230px">
+            <canvas id="verdictChart"></canvas>
+            <div class="donut-center">
+                <strong id="verdictTotal">0</strong>
+                <span>scans</span>
+            </div>
+        </div>
+        <div class="legend" style="margin-top:14px;justify-content:center;gap:14px">
+            <span><i class="round" style="background:#ef4444"></i>Phishing <b style="color:#e8eefb;margin-left:4px" id="legendPhishing">0</b></span>
+            <span><i class="round" style="background:#22c55e"></i>Legitimate <b style="color:#e8eefb;margin-left:4px" id="legendLegitimate">0</b></span>
+            <span><i class="round" style="background:#f59e0b"></i>Other <b style="color:#e8eefb;margin-left:4px" id="legendOther">0</b></span>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Security score + recent ================= -->
+<div class="grid-lower">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Security Score</div>
+                <div class="card-sub">Legitimate share of classified scans</div>
+            </div>
+        </div>
+        <div class="chart-wrap short gauge-wrap" style="height:190px">
+            <canvas id="gaugeChart"></canvas>
+            <div class="donut-center" style="padding-top:26px">
+                <strong id="gaugeScore">—</strong>
+                <span>out of 100</span>
+            </div>
+        </div>
+        <p class="ring-note" id="gaugeNote">
+            Scan a URL to compute your security score. Higher is safer.
+        </p>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Recent Scans</div>
+                <div class="card-sub">Latest verdicts from the verification pipeline</div>
+            </div>
+            <a class="card-tag" href="/scanner" style="text-decoration:none">Scan a URL →</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Verdict</th>
+                        <th>Confidence</th>
+                        <th>Risk</th>
+                        <th>When</th>
+                    </tr>
+                </thead>
+                <tbody id="recentBody">
+                    <tr><td colspan="5" class="empty-note">No scans yet — run your first scan.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

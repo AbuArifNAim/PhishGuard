@@ -1,0 +1,259 @@
+﻿{% extends "base.html" %}
+{% block title %}Analytics · PhishGuard AI{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block page_subtitle %}Model evaluation, ablation study and dataset insight{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="page-title">Model Analytics</div>
+        <p class="page-sub">
+            Evaluation results for all five classifiers, the ablation study on feature groups,
+            confidence calibration and the SHAP artefacts produced during training.
+        </p>
+    </div>
+    <a class="btn btn-ghost" href="/xai">
+        <svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 0-4 4c-2 1-3 2.6-3 4.5 0 1.6.8 3 2 3.9V18a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-2.6c1.2-.9 2-2.3 2-3.9 0-1.9-1-3.5-3-4.5a4 4 0 0 0-4-4z"/></svg>
+        Local explanations
+    </a>
+</div>
+
+<!-- ================= KPI ================= -->
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon cyan">
+                <svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div class="kpi-label">Deployed Model</div>
+        </div>
+        <div class="kpi-value" id="kpiDeployedAcc">—</div>
+        <div class="kpi-foot">Random Forest · accuracy</div>
+    </div>
+
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon violet">
+                <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+            </div>
+            <div class="kpi-label">Best ROC-AUC</div>
+        </div>
+        <div class="kpi-value" id="kpiBestAuc">—</div>
+        <div class="kpi-foot" id="kpiBestModel">—</div>
+    </div>
+
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon amber">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </div>
+            <div class="kpi-label">Inference Time</div>
+        </div>
+        <div class="kpi-value" id="kpiInference">—</div>
+        <div class="kpi-foot">Random Forest · per prediction</div>
+    </div>
+
+    <div class="kpi">
+        <div class="kpi-top">
+            <div class="kpi-icon blue">
+                <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+            </div>
+            <div class="kpi-label">Dataset</div>
+        </div>
+        <div class="kpi-value" id="kpiDataset">—</div>
+        <div class="kpi-foot">cleaned URLs · 16 features</div>
+    </div>
+</div>
+
+<!-- ================= Comparison + inference ================= -->
+<div class="grid-main">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Model Comparison</div>
+                <div class="card-sub">Test-set performance of all five classifiers</div>
+            </div>
+            <div class="legend">
+                <span><i style="background:#22d3ee"></i>Accuracy</span>
+                <span><i style="background:#3b82f6"></i>F1</span>
+                <span><i style="background:#8b5cf6"></i>ROC-AUC</span>
+            </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="modelChart"></canvas></div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Inference Time</div>
+                <div class="card-sub">Seconds per prediction (lower is better)</div>
+            </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="timeChart"></canvas></div>
+    </div>
+</div>
+
+<!-- ================= Ablation + confusion ================= -->
+<div class="grid-2">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Ablation Study</div>
+                <div class="card-sub">Effect of removing feature groups</div>
+            </div>
+        </div>
+        <div class="chart-wrap"><canvas id="ablationChart"></canvas></div>
+        <div class="legend" style="margin-top:12px;justify-content:center">
+            <span><i style="background:#22d3ee"></i>Accuracy</span>
+            <span><i style="background:#8b5cf6"></i>Macro F1</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Confusion Matrix</div>
+                <div class="card-sub">Test-set predictions, per model</div>
+            </div>
+            <select class="input" id="confusionSelect" style="width:auto;padding:8px 38px 8px 12px;font-size:12px"></select>
+        </div>
+
+        <div class="matrix-wrap" id="matrixWrap"></div>
+
+        <div class="confidence-line" style="margin-top:16px">
+            <span>Precision (phishing)</span>
+            <b id="matrixPrecision">—</b>
+        </div>
+        <div class="confidence-line" style="border-top:none;padding-top:6px;margin-top:0">
+            <span>Recall (phishing)</span>
+            <b id="matrixRecall">—</b>
+        </div>
+        <div class="confidence-line" style="border-top:none;padding-top:6px;margin-top:0">
+            <span>False positives</span>
+            <b id="matrixFp">—</b>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Calibration ================= -->
+<div class="grid-2" style="margin-bottom:18px">
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Confidence Calibration</div>
+                <div class="card-sub">Held-out reliability after slope-only Platt scaling</div>
+            </div>
+            <span class="card-tag">held-out</span>
+        </div>
+
+        <div class="confidence-line">
+            <span>Brier score (raw → calibrated)</span>
+            <b id="calBrier">—</b>
+        </div>
+        <div class="confidence-line" style="border-top:none;padding-top:6px;margin-top:0">
+            <span>Log loss (raw → calibrated)</span>
+            <b id="calLogloss">—</b>
+        </div>
+        <div class="confidence-line" style="border-top:none;padding-top:6px;margin-top:0">
+            <span>ECE, 10 bins (raw → calibrated)</span>
+            <b id="calEce">—</b>
+        </div>
+        <div class="confidence-line" style="border-top:none;padding-top:6px;margin-top:0">
+            <span>Abstain band · rate</span>
+            <b id="calAbstain">—</b>
+        </div>
+
+        <p class="ring-note" style="margin-top:12px">
+            The forest's probabilities are corrected with a slope-only Platt fit on the
+            domain-held-out split. No intercept is fitted, so the dataset's phishing-heavy
+            prior does not inflate real-world false positives.
+        </p>
+    </div>
+
+    <figure class="card image-card">
+        <div class="card-head">
+            <div class="card-title">Reliability Diagram</div>
+        </div>
+        <img src="/results/calibration_curve.png" alt="Calibration reliability diagram">
+        <figcaption>Raw vs calibrated confidence against the observed phishing rate.</figcaption>
+    </figure>
+</div>
+
+<!-- ================= Full metrics table ================= -->
+<div class="card" style="margin-bottom:18px">
+    <div class="card-head">
+        <div>
+            <div class="card-title">Full Evaluation Metrics</div>
+            <div class="card-sub">Accuracy, precision, recall, F1 and ROC-AUC on the held-out test set</div>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1 Score</th>
+                    <th>ROC-AUC</th>
+                    <th>Train (s)</th>
+                    <th>Predict (s)</th>
+                </tr>
+            </thead>
+            <tbody id="metricsBody">
+                <tr><td colspan="8" class="empty-note">Loading metrics…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ================= SHAP / ROC artefacts ================= -->
+<div class="page-head" style="margin-bottom:14px">
+    <div>
+        <div class="card-title" style="font-size:16px">Evaluation Artefacts</div>
+        <div class="card-sub">Figures generated during training and evaluation</div>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:18px">
+    <figure class="card image-card">
+        <div class="card-head">
+            <div class="card-title">ROC Curves</div>
+        </div>
+        <img src="/results/roc_comparison.png" alt="ROC comparison of all models">
+        <figcaption>True-positive vs false-positive trade-off for every classifier.</figcaption>
+    </figure>
+
+    <figure class="card image-card">
+        <div class="card-head">
+            <div class="card-title">SHAP Summary</div>
+        </div>
+        <img src="/results/shap_summary.png" alt="SHAP summary plot">
+        <figcaption>Global SHAP values — how each feature shifts predictions across the dataset.</figcaption>
+    </figure>
+</div>
+
+<div class="grid-2">
+    <figure class="card image-card">
+        <div class="card-head">
+            <div class="card-title">SHAP Waterfall</div>
+        </div>
+        <img src="/results/shap_waterfall.png" alt="SHAP waterfall plot">
+        <figcaption>Additive explanation for a single prediction, from base value to model output.</figcaption>
+    </figure>
+
+    <figure class="card image-card">
+        <div class="card-head">
+            <div class="card-title">Metrics Comparison</div>
+        </div>
+        <img src="/results/metrics_comparison.png" alt="Metrics comparison chart">
+        <figcaption>Side-by-side comparison of accuracy, precision, recall and F1.</figcaption>
+    </figure>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}
+

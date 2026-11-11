@@ -1,0 +1,17 @@
+,mean_abs_shap
+https_flag,0.134949
+path_length,0.123302
+token_count,0.084489
+number_of_digits,0.060937
+percentage_numeric_chars,0.036087
+dot_count,0.027395
+tld_length,0.019975
+url_length,0.007922
+has_ip_address,0.007807
+suspicious_file_extension,0.006619
+tld_popularity,0.006065
+url_entropy,0.004949
+domain_name_length,0.004539
+subdomain_count,0.002545
+has_hyphen_in_domain,0.000502
+query_param_count,0.000162
